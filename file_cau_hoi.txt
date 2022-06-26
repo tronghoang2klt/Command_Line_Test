@@ -1,0 +1,19 @@
+Cau1: con ga may chan?
+1. 2 chan
+2. 3 chan
+3. 4 chan
+4. 5 chan
+
+Cau2: con bit may chan?
+1. 2 chan
+2. 3 chan
+3. 4 chan
+4. 5 chan
+
+Cau3: con ga may chan?
+1. 2 chan
+2. 3 chan
+3. 4 chan
+4. 5 chan
+
+

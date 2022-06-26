@@ -1,0 +1,10 @@
+hoang	123
+nam	8767h
+hieu	954
+loc	123456
+LOC	aaa
+a	1
+b	1
+c	12345678a!
+123a	12345678a!
+abc	12345678!a

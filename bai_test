@@ -1,0 +1,257 @@
+#!/bin/bash
+# link cac file
+file_user="/home/nthoang/annt/dangki.txt"
+file_cau_hoi="/home/nthoang/annt/file_cau_hoi.txt"
+file_tra_loi="/home/nthoang/annt/file_tra_loi.txt"
+ 
+#---------------------------CAC HAM PHAN SIGN UP------------------------
+
+function nhap_ten {        
+	echo "nhap ten khong chua ki tu dac biet: "
+	read name 
+	
+	#---kiem tra chua ki hieu dac biet ko
+	specialCharsName="$(echo "$name" | grep '[[:punct:]]')"
+	if [[ $specialCharsName != '' ]];then
+	echo "da chu ki tu dac biet, nhap lai"
+	nhap_ten
+	fi
+	
+	#---kiem tra ten co trung khong----
+	var="$(cut -f1 "$file_user" | grep -c -w $name )"
+	while [[ $var == 1 ]]; do
+		echo "da trung ten "
+		nhap_ten
+		#var="$(cut -f1 "$file_user" | grep -c -w $name )"
+	done
+}
+
+function nhap_pass {
+	echo -e "\n nhap vao password co 8 ki tu, chuaso va chu, 1 ki tu dac biet : "
+	read -s -r pass1
+	if [ ${#pass1} -ge 8 ]; then
+
+	#---kiem tra chua alpha ko----
+	alphaChars="$( echo "$pass1" | grep '[[:alpha:]]')"
+	if [[ $alphaChars == '' ]];then
+	echo "Try writing alpha char"
+	nhap_pass
+	fi
+	
+	#---kiem tra chu so ko------
+	numberChars="$(echo "$pass1" | grep '[[:digit:]]')"
+	if [[ $numberChars == '' ]];then
+	echo "Try writing digit char"
+	nhap_pass
+	fi
+	
+	#---kiem tra chua ki hieu dac biet ko
+	specialChars="$(echo "$pass1" | grep '[[:punct:]]')"
+	if [[ $specialChars != '' ]];then
+	echo "password is good" 
+	else
+	echo "Try writing special char"
+	nhap_pass
+	fi
+
+	else 
+	echo "Try writing password longer"
+	nhap_pass
+	fi
+}
+function nhap_lai_pass {
+	echo "nhap lai pass"
+	read -s pass2
+	while [ $pass2 != $pass1 ]; do
+		echo "pass ko trung, nhap lai: "
+		read -s pass2
+	done
+}
+function sign_up {
+        echo  "sign up screen"
+	nhap_ten
+       	nhap_pass
+        nhap_lai_pass
+	echo "$name	$pass1" >> "$file_user"
+}
+
+#----------------CAC HAM PHAN SIGN IN------------------------------------------
+
+function user_login {
+	bien_dn_dung=0
+	while [[ $bien_dn_dung != 1 ]]; do
+		echo "nhap ten dang nhap: "
+		read name1 
+		echo "nhap pass:"
+		read -s pass
+		while read -a arr ; do
+		if [[ $name1 = ${arr[0]} ]]; then
+			if [[ $pass = ${arr[1]} ]]; then	
+				bien_dn_dung=1
+			fi
+		fi
+		done < "$file_user"
+		if [ $bien_dn_dung != 1 ]; then
+		echo "ten dang nhap hoac pass khong dung"
+		fi
+	done
+	bien_dn_dung=0
+	echo "dang nhap thanh cong"
+}
+function hienthicauhoi
+{
+	case "$1" in
+	1) echo "tra loi cau 1 trong 10 giay"
+		sed -n '1,5p' $file_cau_hoi
+		;;	
+	2) echo "tra loi cau 2 trong 10 giay"
+		sed -n '7,11p' $file_cau_hoi
+		;;	
+	3) echo "tra loi cau 3 trong 10 giay"
+		sed -n '13,17p' $file_cau_hoi
+		;;	
+	esac
+}
+function traloi
+{
+	time=10
+	while [ $time != 0 ] ; do
+		read -t 1 -n 1
+		time=$(( time - 1 ))
+		if [[ $REPLY =~ ^[1-4]$ ]]; then
+		echo -ne "$REPLY\t" >> "$file_tra_loi"
+		break
+		else
+		#xoa dong thoi gian cua hien
+		echo -ne "\r\033[K thoi gian con lai $time giay, cau tra loi : "
+		fi
+	done
+}
+
+		#**-----TAKE A TEST-------***
+
+function take_a_test {
+	echo "take a test"
+	echo -ne "$name1\t$pass\t" >> "$file_tra_loi"
+	cauhoi=1
+	while [ $cauhoi != 4 ]; do
+		clear
+		hienthicauhoi $cauhoi
+		traloi $var_cau_hoi
+		cauhoi=$(( cauhoi +1 ))
+	done
+	cauhoi=1
+	echo -e "\n" >> "$file_tra_loi"
+}
+
+		#**----VIEW TEST------***
+function view_a_test {
+	echo "view a test"
+	bien_view_dung=0
+	so_lan_da_tra_loi=0
+	while [[ $bien_view_dung != 1 ]]; do
+		while read -a arr1 ; do
+			if [[ $name1 = ${arr1[0]} ]]; then
+					
+				bien_view_dung=1
+				so_lan_da_tra_loi=$((so_lan_da_tra_loi + 1))
+				echo "lan tra loi thu $so_lan_da_tra_loi"
+				for i in {2..4}; do
+					j=$((i-1))
+					echo "cau $j: chon dap an ${arr1[$i]} "
+				done
+				echo " "
+		
+			fi
+		done < "$file_tra_loi"
+	done
+}
+
+		#**--------EXIT TEST-------***
+
+function exit_test {
+	clear
+	echo "exit test"
+	menu
+}
+
+		#**--------MENU CAU HOI TEST-------***
+function menu_cau_hoi {
+	echo "
+please select:
+
+1.take a test
+2.view a test
+3.exit test
+"
+read -p " enter selection [1-3] > "
+if [[ $REPLY =~ ^[1-3]$ ]]; then
+	if [[ $REPLY == 3 ]]; then
+        exit_test
+        fi
+
+	if [[ $REPLY == 1 ]]; then
+	clear
+	#echo "da chon 1"
+	take_a_test
+	clear	
+	fi
+
+	if [[ $REPLY == 2 ]]; then
+	clear
+	#echo "da chon 2"	
+	view_a_test
+	fi
+	menu_cau_hoi
+fi
+}
+function sign_in {
+	echo "sign in screen"
+	user_login
+	clear
+	menu_cau_hoi
+	
+}
+
+#-------------------- CAC HAM PHAN EXIT------------------------------------
+
+function func_exit {
+	echo "exit"
+	exit
+}
+
+#----------------------HAM CHINH--------------------------------------------
+
+function menu {
+echo "
+my command line test
+please select:
+
+1. sign up
+2. sign in
+3. exit
+
+"
+read -p " enter selection [1-3] > "
+#while  [ $REPLY != 3 ]; do
+if [[ $REPLY =~ ^[1-3]$ ]]; then
+
+	if [[ $REPLY == 1 ]]; then
+	clear
+	sign_up	
+	fi
+
+	if [[ $REPLY == 2 ]]; then
+	clear
+	sign_in
+	fi
+
+	if [[ $REPLY == 3 ]]; then
+	clear
+        func_exit
+        fi
+fi
+menu
+}
+menu
+
